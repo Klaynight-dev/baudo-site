@@ -1,4 +1,5 @@
-    // ============================
+window.location.href = "https://maintenance.cscpacman.fr/";
+// ============================
     // LOADING SCREEN
     // ============================
     
