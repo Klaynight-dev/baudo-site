@@ -1,5 +1,3 @@
-    const DISCORD_AUTH_WORKER = "https://discord-auth.votre-nom.workers.dev";
-    const DISCORD_WORKER_SECRET = "votre_secret_worker";
     // ============================
     // LOADING SCREEN
     // ============================
