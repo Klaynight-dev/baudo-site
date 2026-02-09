@@ -364,15 +364,15 @@ function createJamCard(jam) {
       
       <div class="jam-actions">
         ${isUpcoming ? `
-          <button class="jam-btn jam-btn-primary discord-register" onclick="alert('Fonctionnalité Discord à venir !')">
-            <i class="fa-brands fa-discord"></i> S'inscrire
-          </button>
+          <a href="${jam.url || 'https://itch.io/jams'}" target="_blank" class="jam-btn jam-btn-primary">
+            <i class="fa-solid fa-gamepad"></i> Page de la Jam
+          </a>
         ` : status === 'live' ? `
-          <a href="${jam.url || '#'}" target="_blank" class="jam-btn jam-btn-primary">
-            Participer
+          <a href="${jam.url || 'https://itch.io/jams'}" target="_blank" class="jam-btn jam-btn-primary">
+            Participer sur itch.io
           </a>
         ` : `
-          <a href="${jam.url || '#'}" target="_blank" class="jam-btn jam-btn-primary">
+          <a href="${jam.url || 'https://itch.io/jams'}" target="_blank" class="jam-btn jam-btn-primary">
             Voir les jeux
           </a>
         `}
@@ -492,27 +492,42 @@ async function trackVisit() {
   try {
     const sessionKey = `visited_${NAMESPACE}_${KEY}`;
 
-    let endpoint = "up"; // Default: increment
-    if (sessionStorage.getItem(sessionKey)) {
-      endpoint = "info"; // Just get info if already visited in this session
+    // Check if user has already visited in this session
+    const hasVisited = sessionStorage.getItem(sessionKey);
+    let endpoint = "up"; // Default: increment count
+
+    if (hasVisited) {
+      endpoint = "info"; // Just get current count without incrementing
     }
 
-    const res = await fetch(`${COUNTER_API_URL}/${NAMESPACE}/${KEY}/${endpoint}`);
+    // Use the counterapi.dev endpoint
+    const url = `${COUNTER_API_URL}/${NAMESPACE}/${KEY}/${endpoint}`;
+    console.log(`Fetching visits from: ${url}`);
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+
     const data = await res.json();
 
-    if (data && data.count !== undefined) {
+    if (data && typeof data.count === 'number') {
+      // If we successfully incremented (and weren't just getting info), mark as visited
       if (endpoint === "up") {
         sessionStorage.setItem(sessionKey, "true");
       }
+
+      // Animate from 0 to actual count
       animateNumber(el, 0, data.count, 2000);
     } else {
-      // Fallback if API fails or is new
-      el.textContent = "772+";
+      console.warn("Invalid counter data received:", data);
+      el.textContent = "772+"; // Fallback to safe value
     }
 
   } catch (err) {
-    console.error("Analytics error:", err);
-    el.textContent = "772+"; // Fallback
+    console.error("Analytics error (visits):", err);
+    el.textContent = "772+"; // Fallback on error
   }
 }
 
